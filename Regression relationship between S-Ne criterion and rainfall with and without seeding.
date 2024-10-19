@@ -1,0 +1,40 @@
+# Load necessary libraries
+library(ggplot2)
+
+# Assume your data looks something like this
+# data <- data.frame(S_Ne = ..., Rainfall_Seeded = ..., Rainfall_Unseeded = ...)
+
+# Fit linear regression models
+model_seeded <- lm(Rainfall_Seeded ~ S_Ne, data = data)
+model_unseeded <- lm(Rainfall_Unseeded ~ S_Ne, data = data)
+
+# Create a data frame for predictions and confidence intervals
+pred_seeded <- predict(model_seeded, interval = "confidence")
+pred_unseeded <- predict(model_unseeded, interval = "confidence")
+
+# Add these predictions back into your data frame for easy plotting
+data$Pred_Seeded <- pred_seeded[, "fit"]
+data$Lower_Seeded <- pred_seeded[, "lwr"]
+data$Upper_Seeded <- pred_seeded[, "upr"]
+
+data$Pred_Unseeded <- pred_unseeded[, "fit"]
+data$Lower_Unseeded <- pred_unseeded[, "lwr"]
+data$Upper_Unseeded <- pred_unseeded[, "upr"]
+
+# Plot both models with ggplot2, adding confidence bands
+ggplot(data, aes(x = S_Ne)) +
+  # Plot for seeded rainfall
+  geom_line(aes(y = Pred_Seeded), color = "blue") +
+  geom_ribbon(aes(ymin = Lower_Seeded, ymax = Upper_Seeded), alpha = 0.2, fill = "blue") +
+  
+  # Plot for unseeded rainfall
+  geom_line(aes(y = Pred_Unseeded), color = "red") +
+  geom_ribbon(aes(ymin = Lower_Unseeded, ymax = Upper_Unseeded), alpha = 0.2, fill = "red") +
+  
+  # Customize labels
+  labs(title = "Regression of S-Ne Criterion vs Rainfall (With and Without Seeding)",
+       x = "S-Ne Criterion",
+       y = "Rainfall",
+       color = "Rainfall Type") +
+  
+  theme_minimal()
